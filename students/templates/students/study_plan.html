@@ -1,0 +1,174 @@
+
+{% extends "students/base.html" %}
+
+{% block title %}My Study Plan | Study Recommender{% endblock %}
+
+{% block extra_css %}
+<style>
+    .study-header {
+        margin-bottom: 24px;
+    }
+
+    .study-header h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 750;
+    }
+
+    .study-header p {
+        margin: 0;
+        color: var(--muted, #64748b);
+        line-height: 1.6;
+    }
+
+    .study-card {
+        margin-bottom: 20px;
+        padding: 24px;
+        background: var(--card, #ffffff);
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 18px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .study-card h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+    }
+
+    .study-card h3 {
+        margin: 20px 0 10px;
+        font-size: 16px;
+    }
+
+    .study-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .study-score {
+        font-weight: 700;
+        color: var(--primary, #4f46e5);
+    }
+
+    .study-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .study-recommendation {
+        margin: 0;
+        line-height: 1.7;
+        color: var(--text, #334155);
+    }
+
+    .resource-link { display: inline-flex; margin-top: 12px; color: var(--primary, #356df3); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+    .study-task-note { margin: 8px 0 0; color: var(--muted, #64748b); font-size: 13px; }
+
+    .study-tasks {
+        padding-left: 22px;
+        margin-bottom: 0;
+    }
+
+    .study-tasks li {
+        padding: 5px 0;
+        line-height: 1.6;
+    }
+
+    .study-empty {
+        padding: 24px;
+        border-radius: 14px;
+        background: var(--surface, #f8fafc);
+        color: var(--muted, #64748b);
+        line-height: 1.7;
+    }
+
+    .study-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 600px) {
+        .study-card {
+            padding: 18px;
+        }
+
+        .study-header h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="study-header">
+    <h1>My Study Plan</h1>
+    <p>
+        Review your learning recommendations and work through the suggested
+        activities to improve your understanding of each topic.
+    </p>
+</header>
+
+{% if latest_attempt %}
+<section class="study-card">
+    <h2>Latest Quiz Results</h2>
+    <p>
+        Your most recent quiz score:
+        <strong>{{ latest_attempt.percentage }}%</strong>
+        <span class="study-task-note">({{ latest_attempt.score }} of {{ latest_attempt.total_questions }} questions correct)</span>
+    </p>
+</section>
+{% endif %}
+
+{% for topic in topics %}
+<article class="study-card">
+    <h2>{{ topic.name }}</h2>
+
+    <div class="study-meta">
+        <span class="study-score">Score: {% if topic.score != None %}{{ topic.score }}%{% else %}Not assessed{% endif %}</span>
+        <span class="study-status">{{ topic.status }}</span>
+    </div>
+
+    <p class="study-recommendation">
+        {{ topic.recommendation }}
+    </p>
+
+    {% if topic.resource_url %}
+    <a class="resource-link" href="{{ topic.resource_url }}" target="_blank" rel="noopener noreferrer">Study resource: {{ topic.resource_title }} ↗</a>
+    {% endif %}
+
+    {% if topic.tasks %}
+    <h3>Recommended Study Activities</h3>
+    <ul class="study-tasks">
+        {% for task in topic.tasks %}
+        <li>{{ task }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</article>
+{% empty %}
+<div class="study-empty">
+    <h2>Your study plan is not ready yet</h2>
+    <p>
+        Take the quiz first so the system can assess your understanding
+        and provide personalized study recommendations.
+    </p>
+    <a href="{% url 'students:quiz' %}" class="button">Take the Quiz</a>
+</div>
+{% endfor %}
+
+<div class="study-actions">
+    <a href="{% url 'students:quiz' %}" class="button">Take Quiz Again</a>
+    <a href="{% url 'students:progress' %}" class="button">View Progress</a>
+</div>
+{% endblock %}

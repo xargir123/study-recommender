@@ -1,0 +1,635 @@
+
+{% extends "students/base.html" %}
+
+{% block title %}Study Quiz | Study Recommender{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-intro {
+        margin-bottom: 24px;
+    }
+
+    .quiz-intro h1 {
+        margin: 0 0 8px;
+        color: var(--navy);
+        font-size: 28px;
+    }
+
+    .quiz-intro p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .quiz-panel {
+        padding: 26px;
+        margin-bottom: 22px;
+    }
+
+    /* QUIZ PROGRESS */
+
+    .quiz-progress {
+        margin-bottom: 24px;
+    }
+
+    .quiz-progress-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .quiz-progress-track {
+        width: 100%;
+        height: 8px;
+        overflow: hidden;
+        border-radius: 99px;
+        background: #e8edf5;
+    }
+
+    .quiz-progress-fill {
+        display: block;
+        width: 0;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--blue);
+        transition: width 0.3s ease;
+    }
+
+    /* QUESTIONS */
+
+    .question-card {
+        padding: 22px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .question-card:first-child {
+        padding-top: 0;
+    }
+
+    .question-number {
+        margin-bottom: 8px;
+        color: var(--blue);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .question-topic {
+        display: inline-block;
+        padding: 5px 10px;
+        margin-bottom: 10px;
+        border-radius: 20px;
+        background: var(--blue-light);
+        color: var(--navy);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .question-title {
+        margin: 0 0 16px;
+        color: var(--navy);
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    .answer-options {
+        display: grid;
+        gap: 10px;
+    }
+
+    .answer-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .answer-option:hover {
+        border-color: var(--blue);
+        background: #f7faff;
+    }
+
+    .answer-option input {
+        flex-shrink: 0;
+        margin-top: 4px;
+        accent-color: var(--blue);
+    }
+
+    .answer-option span {
+        color: var(--text);
+        line-height: 1.5;
+    }
+
+    .quiz-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    /* OVERALL RESULT */
+
+    .result-score {
+        padding: 28px;
+        margin-bottom: 24px;
+        border: 1px solid #dce7ff;
+        border-radius: 14px;
+        background: #f0f5ff;
+        text-align: center;
+    }
+
+    .result-score .score-number {
+        margin: 8px 0;
+        color: var(--navy);
+        font-size: 42px;
+        font-weight: 800;
+    }
+
+    .result-score p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    /* TOPIC RESULTS */
+
+    .result-topic-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin: 20px 0;
+    }
+
+    .result-topic-card {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--white);
+    }
+
+    .result-topic-card h3 {
+        margin: 0 0 12px;
+        color: var(--navy);
+        font-size: 16px;
+    }
+
+    .topic-score {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .topic-score strong {
+        color: var(--navy);
+        font-size: 22px;
+    }
+
+    .topic-correct-count {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    /* TOPIC PROGRESS BARS */
+
+    .topic-bar-track {
+        display: block;
+        width: 100%;
+        height: 10px;
+        margin-top: 12px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8edf5;
+    }
+
+    .topic-bar-fill {
+        display: block;
+        width: 0;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--blue);
+        transition: width 0.4s ease;
+    }
+
+    /* TOPIC STATUS */
+
+    .topic-status {
+        display: inline-block;
+        padding: 5px 9px;
+        margin-top: 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-needs-practice {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .status-developing {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .status-strong {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    /* ANSWER REVIEW */
+
+    .answer-review {
+        padding: 18px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .answer-review:last-child {
+        border-bottom: none;
+    }
+
+    .answer-review h3 {
+        margin: 0 0 12px;
+        color: var(--navy);
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .answer-review p {
+        margin: 7px 0;
+        line-height: 1.6;
+    }
+
+    .correct {
+        color: #15803d;
+        font-weight: 700;
+    }
+
+    .incorrect {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
+    .explanation {
+        padding: 12px 14px;
+        margin-top: 12px;
+        border-radius: 8px;
+        background: var(--background);
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .quiz-empty {
+        color: var(--muted);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1000px) {
+        .result-topic-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 650px) {
+        .quiz-panel {
+            padding: 18px;
+        }
+
+        .quiz-intro h1 {
+            font-size: 24px;
+        }
+
+        .result-score {
+            padding: 20px;
+        }
+
+        .result-score .score-number {
+            font-size: 34px;
+        }
+
+        .result-topic-list {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<header class="quiz-intro">
+    <h1>Study Quiz</h1>
+    <p>
+        Test your understanding of the topics and use your results
+        to guide your next study session.
+    </p>
+</header>
+
+{% if result %}
+
+    <!-- OVERALL QUIZ RESULT -->
+
+    <section class="panel quiz-panel">
+
+        <div class="result-score">
+            <p>Quiz completed!</p>
+
+            <div class="score-number">
+                {{ result.percentage|floatformat:0 }}%
+            </div>
+
+            <p>
+                You answered {{ result.score }} out of
+                {{ result.total }} questions correctly.
+            </p>
+        </div>
+
+        <h2>Topic Results</h2>
+
+        <!-- TOPIC RESULT CARDS -->
+
+        {% if result.topic_scores %}
+            <div class="result-topic-list">
+
+                {% for topic in result.topic_scores %}
+
+                    <article class="result-topic-card">
+
+                        <h3>{{ topic.name }}</h3>
+
+                        <p class="topic-score">
+                            Score:
+                            <strong>{{ topic.percentage }}%</strong>
+                        </p>
+
+                        <p class="topic-correct-count">
+                            Correct answers:
+                            {{ topic.correct }} out of {{ topic.total }}
+                        </p>
+
+                        <div
+                            class="topic-bar-track"
+                            role="progressbar"
+                            aria-label="{{ topic.name }} score"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="{{ topic.percentage }}"
+                        >
+                            <div
+                                class="topic-bar-fill"
+                                data-score="{{ topic.percentage }}"
+                            ></div>
+                        </div>
+
+                        {% if topic.percentage < 50 %}
+                            <span class="topic-status status-needs-practice">
+                                Needs Practice
+                            </span>
+                        {% elif topic.percentage < 75 %}
+                            <span class="topic-status status-developing">
+                                Developing
+                            </span>
+                        {% else %}
+                            <span class="topic-status status-strong">
+                                Strong
+                            </span>
+                        {% endif %}
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+        {% else %}
+            <p class="quiz-empty">
+                No topic results are available for this attempt.
+            </p>
+        {% endif %}
+
+        <div class="quiz-actions">
+            <a href="{% url 'students:study_plan' %}" class="button">
+                View Study Plan
+            </a>
+        </div>
+
+    </section>
+
+    <!-- ANSWER REVIEW -->
+
+    <section class="panel quiz-panel">
+
+        <h2>Answer Review</h2>
+
+        <p class="muted">
+            Review your answers and read the explanations.
+        </p>
+
+        {% for answer in result.answers %}
+
+            <div class="answer-review">
+
+                <h3>
+                    Question {{ forloop.counter }}:
+                    {{ answer.text }}
+                </h3>
+
+                {% if answer.is_correct %}
+                    <p class="correct">Correct answer</p>
+                {% else %}
+                    <p class="incorrect">Incorrect answer</p>
+                {% endif %}
+
+                <p>
+                    <strong>Your answer:</strong>
+                    {{ answer.selected_label|default:"Not answered" }}
+                </p>
+
+                <p>
+                    <strong>Correct answer:</strong>
+                    {{ answer.correct_label }}
+                </p>
+
+                {% if answer.explanation %}
+                    <div class="explanation">
+                        <strong>Explanation:</strong>
+                        {{ answer.explanation }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        {% empty %}
+            <p class="quiz-empty">
+                No answer review is available for this attempt.
+            </p>
+        {% endfor %}
+
+    </section>
+
+    <div class="quiz-actions">
+        <a href="{% url 'students:quiz' %}" class="button">
+            Take Another Quiz
+        </a>
+    </div>
+
+{% else %}
+
+    <!-- QUIZ FORM -->
+
+    <form method="post" id="quizForm">
+        {% csrf_token %}
+
+        <section class="panel quiz-panel">
+
+            <div class="quiz-progress">
+
+                <div class="quiz-progress-label">
+                    <span>Quiz progress</span>
+                    <span id="progressText">
+                        0 of {{ questions|length }} answered
+                    </span>
+                </div>
+
+                <div class="quiz-progress-track">
+                    <div
+                        class="quiz-progress-fill"
+                        id="progressFill"
+                    ></div>
+                </div>
+
+            </div>
+
+            {% for question in questions %}
+
+                <div class="question-card">
+
+                    <div class="question-number">
+                        Question {{ forloop.counter }}
+                    </div>
+
+                    <div class="question-topic">
+                        {{ question.topic }}
+                    </div>
+
+                    <h2 class="question-title">
+                        {{ question.text }}
+                    </h2>
+
+                    <div class="answer-options">
+
+                        {% for option in question.options %}
+
+                            <label class="answer-option">
+                                <input
+                                    type="radio"
+                                    name="{{ question.id }}"
+                                    value="{{ option.0 }}"
+                                    required
+                                >
+                                <span>{{ option.1 }}</span>
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+                <p class="quiz-empty">
+                    There are currently no quiz questions available.
+                </p>
+            {% endfor %}
+
+            {% if questions %}
+                <div class="quiz-actions">
+                    <button type="submit" class="button">
+                        Submit Quiz
+                    </button>
+                </div>
+            {% endif %}
+
+        </section>
+    </form>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+    /*
+     * Topic results:
+     * Read each score from data-score and set the bar width.
+     * This avoids placing Django variables inside CSS.
+     */
+
+    document.querySelectorAll(".topic-bar-fill").forEach(function (bar) {
+        const rawScore = Number(bar.dataset.score);
+
+        if (Number.isFinite(rawScore)) {
+            const score = Math.max(0, Math.min(100, rawScore));
+            bar.style.width = score + "%";
+        }
+    });
+
+    /*
+     * Quiz form progress:
+     * Update the bar as the student answers questions.
+     */
+
+    const form = document.getElementById("quizForm");
+
+    if (!form) {
+        return;
+    }
+
+    const questions = form.querySelectorAll(".question-card");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+
+    function updateProgress() {
+        const total = questions.length;
+        let answered = 0;
+
+        questions.forEach(function (question) {
+            const selectedAnswer = question.querySelector(
+                'input[type="radio"]:checked'
+            );
+
+            if (selectedAnswer) {
+                answered++;
+            }
+        });
+
+        const percentage = total > 0
+            ? (answered / total) * 100
+            : 0;
+
+        if (progressFill) {
+            progressFill.style.width = percentage + "%";
+        }
+
+        if (progressText) {
+            progressText.textContent =
+                answered + " of " + total + " answered";
+        }
+    }
+
+    form.addEventListener("change", updateProgress);
+    updateProgress();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,773 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Study Recommender</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #102b63;
+            --blue: #2563eb;
+            --blue-dark: #1d4ed8;
+            --muted: #64748b;
+            --border: #d7e2f0;
+            --background: #f1f6fc;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at 10% 10%, #e1edff 0, transparent 35%),
+                radial-gradient(circle at 90% 90%, #dbeafe 0, transparent 32%),
+                var(--background);
+            color: var(--navy);
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 1050px;
+        }
+
+        .auth-card {
+            display: grid;
+            grid-template-columns: 0.92fr 1.08fr;
+            min-height: 590px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(203, 213, 225, 0.65);
+            border-radius: 24px;
+            box-shadow: 0 24px 65px rgba(30, 64, 120, 0.12);
+        }
+
+        /* Left branding panel */
+
+        .brand-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 42px 36px;
+            overflow: hidden;
+            background: linear-gradient(155deg, #e6f0ff, #d4e6ff);
+        }
+
+        .brand-panel::before,
+        .brand-panel::after {
+            position: absolute;
+            content: "";
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.28);
+            pointer-events: none;
+        }
+
+        .brand-panel::before {
+            width: 260px;
+            height: 260px;
+            bottom: -100px;
+            left: -90px;
+        }
+
+        .brand-panel::after {
+            width: 190px;
+            height: 190px;
+            top: 220px;
+            right: -110px;
+        }
+
+        .brand,
+        .brand-message,
+        .study-art {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            color: white;
+            background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+            border-radius: 15px;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+        }
+
+        .brand-icon svg {
+            width: 29px;
+            height: 29px;
+        }
+
+        .brand-name {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-name span {
+            display: block;
+            color: var(--blue);
+        }
+
+        .brand-caption {
+            margin: 7px 0 0;
+            color: #4b6389;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .brand-message {
+            margin-top: 48px;
+        }
+
+        .brand-message h2 {
+            margin: 0 0 12px;
+            font-size: clamp(25px, 3vw, 32px);
+            line-height: 1.25;
+            letter-spacing: -0.8px;
+        }
+
+        .brand-message p {
+            max-width: 310px;
+            margin: 0;
+            color: #4c668d;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .study-art {
+            width: 100%;
+            max-width: 310px;
+            margin: auto auto 0;
+            padding-top: 24px;
+        }
+
+        .study-art svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        /* Login form */
+
+        .form-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px clamp(28px, 5vw, 58px);
+        }
+
+        .form-heading {
+            margin-bottom: 32px;
+        }
+
+        .form-heading h1 {
+            margin: 0 0 10px;
+            color: #12264a;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .form-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .error {
+            margin: 0 0 20px;
+            padding: 13px 15px;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .field {
+            margin-bottom: 21px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 9px;
+            color: #243b61;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            width: 20px;
+            height: 20px;
+            color: #6684b4;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .field input {
+            display: block;
+            width: 100%;
+            min-height: 50px;
+            padding: 13px 48px 13px 45px;
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            outline: none;
+            background: #fff;
+            color: #172b4d;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .field input::placeholder {
+            color: #94a8c4;
+        }
+
+        .field input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.11);
+        }
+
+        /* Hide the browser's built-in password reveal button. */
+
+        .field input::-ms-reveal,
+        .field input::-ms-clear {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        .field input::-webkit-credentials-auto-fill-button {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Animated custom eye button */
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            padding: 5px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #6684b4;
+            cursor: pointer;
+            transform: translateY(-50%);
+            transition:
+                color 0.2s ease,
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--blue);
+            background: #eff6ff;
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        .password-toggle:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid var(--blue);
+            outline-offset: 2px;
+        }
+
+        .eye-icon {
+            width: 19px;
+            height: 19px;
+            overflow: visible;
+        }
+
+        .eye-outline {
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 0.25s ease;
+        }
+
+        .eye-pupil {
+            transform-box: fill-box;
+            transform-origin: center;
+            transition:
+                transform 0.25s ease,
+                opacity 0.2s ease;
+        }
+
+        .eye-slash {
+            stroke-dasharray: 24;
+            stroke-dashoffset: 0;
+            opacity: 1;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition:
+                stroke-dashoffset 0.25s ease,
+                opacity 0.2s ease,
+                transform 0.25s ease;
+        }
+
+        /* Password visible: smoothly remove the slash. */
+
+        .password-toggle[aria-pressed="true"] .eye-slash {
+            stroke-dashoffset: 24;
+            opacity: 0;
+            transform: scale(0.7);
+        }
+
+        .password-toggle[aria-pressed="true"] .eye-pupil {
+            transform: scale(1.15);
+        }
+
+        .password-toggle[aria-pressed="true"] .eye-outline {
+            transform: scale(1.04);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -9px;
+            margin-bottom: 25px;
+        }
+
+        .text-link {
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .text-link:hover {
+            color: var(--blue-dark);
+            text-decoration: underline;
+        }
+
+        .submit-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 54px;
+            padding: 14px 18px;
+            border: 0;
+            border-radius: 11px;
+            background: linear-gradient(100deg, #2563eb, #1d4ed8);
+            color: white;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 750;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.17);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 11px 24px rgba(37, 99, 235, 0.25);
+        }
+
+        .submit-button:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+        }
+
+        .submit-button svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        .form-divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 28px 0;
+            color: #8a9bb5;
+            font-size: 12px;
+        }
+
+        .form-divider::before,
+        .form-divider::after {
+            flex: 1;
+            height: 1px;
+            background: #dce5f1;
+            content: "";
+        }
+
+        .register-link {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        .register-link a {
+            color: var(--blue);
+            font-weight: 750;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 20px;
+            }
+
+            .auth-card {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: auto;
+            }
+
+            .brand-panel {
+                padding: 28px;
+            }
+
+            .brand-message {
+                margin-top: 28px;
+            }
+
+            .brand-message h2 {
+                font-size: 26px;
+            }
+
+            .study-art {
+                max-width: 220px;
+                margin: 10px auto -5px;
+                padding-top: 10px;
+            }
+
+            .form-panel {
+                padding: 35px 28px;
+            }
+
+            .form-heading {
+                margin-bottom: 25px;
+            }
+
+            .form-heading h1 {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            body {
+                padding: 10px;
+            }
+
+            .brand-panel,
+            .form-panel {
+                padding: 24px 20px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .password-toggle,
+            .eye-outline,
+            .eye-pupil,
+            .eye-slash,
+            .field input,
+            .submit-button {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="auth-wrapper">
+        <div class="auth-card">
+
+            <!-- Branding panel -->
+            <section class="brand-panel">
+                <div class="brand">
+                    <div class="brand-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M2 9.2 12 4l10 5.2-10 5.2L2 9.2Z"
+                                  stroke="currentColor" stroke-width="1.8"
+                                  stroke-linejoin="round"/>
+                            <path d="M6 11.4v5.1c3.8 3 8.2 3 12 0v-5.1"
+                                  stroke="currentColor" stroke-width="1.8"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 9.2v6"
+                                  stroke="currentColor" stroke-width="1.8"
+                                  stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p class="brand-name">
+                            Study
+                            <span>Recommender</span>
+                        </p>
+                        <p class="brand-caption">
+                            AI-Based Personalized Student<br>
+                            Study Recommendation System
+                        </p>
+                    </div>
+                </div>
+
+                <div class="brand-message">
+                    <h2>Learn smarter,<br>one topic at a time.</h2>
+                    <p>
+                        Personalized study guidance powered by your
+                        learning progress.
+                    </p>
+                </div>
+
+                <div class="study-art" aria-hidden="true">
+                    <svg viewBox="0 0 320 245" fill="none"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="155" cy="112" r="88" fill="#FFFFFF" fill-opacity=".24"/>
+                        <circle cx="43" cy="150" r="39" fill="#FFFFFF" fill-opacity=".28"/>
+                        <circle cx="278" cy="53" r="8" fill="#FFFFFF" fill-opacity=".65"/>
+                        <circle cx="271" cy="170" r="5" fill="#93C5FD"/>
+                        <circle cx="60" cy="79" r="5" fill="#93C5FD"/>
+
+                        <rect x="211" y="55" width="77" height="78" rx="10"
+                              fill="#FFFFFF" fill-opacity=".9"
+                              stroke="#A9CBFF" stroke-width="2"/>
+                        <path d="M227 116V102H238V116M246 116V88H257V116M265 116V76H276V116"
+                              fill="#60A5FA" stroke="#2563EB" stroke-width="2"
+                              stroke-linejoin="round"/>
+                        <path d="m225 92 17-12 12 5 17-17"
+                              stroke="#2563EB" stroke-width="2.5"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+
+                        <circle cx="151" cy="91" r="40" fill="#DBEAFE" stroke="#93C5FD" stroke-width="2"/>
+                        <circle cx="151" cy="91" r="28" fill="#EFF6FF"/>
+                        <path d="M151 63V119M123 91H179M131 71L171 111M171 71L131 111"
+                              stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 4"/>
+                        <circle cx="151" cy="91" r="17" fill="#2563EB"/>
+                        <text x="151" y="96" text-anchor="middle" font-size="15"
+                              font-weight="800" fill="#FFFFFF">AI</text>
+                        <circle cx="151" cy="63" r="4" fill="#2563EB"/>
+                        <circle cx="179" cy="91" r="4" fill="#2563EB"/>
+                        <circle cx="151" cy="119" r="4" fill="#2563EB"/>
+                        <circle cx="123" cy="91" r="4" fill="#2563EB"/>
+
+                        <ellipse cx="151" cy="216" rx="131" ry="13" fill="#7AAFF6" fill-opacity=".3"/>
+
+                        <path d="M34 160H164L183 171H52L34 160Z" fill="#93C5FD"/>
+                        <path d="M34 160H164V179H34V160Z" fill="#2563EB"/>
+                        <path d="M34 179H164L183 190H52L34 179Z" fill="#1D4ED8"/>
+                        <path d="M52 190H183V200H52V190Z" fill="#3B82F6"/>
+
+                        <path d="M43 137H160L177 147H60L43 137Z"
+                              fill="#FFFFFF" stroke="#93C5FD" stroke-width="2"/>
+                        <path d="M43 137H160V155H43V137Z" fill="#60A5FA"/>
+                        <path d="M43 155H160L177 165H60L43 155Z" fill="#2563EB"/>
+
+                        <g transform="rotate(-8 222 177)">
+                            <rect x="179" y="145" width="82" height="92" rx="8"
+                                  fill="#FFFFFF" stroke="#93C5FD" stroke-width="2"/>
+                            <rect x="179" y="145" width="82" height="15" rx="6" fill="#2563EB"/>
+                            <path d="M192 175l4 4 7-8M192 195l4 4 7-8M192 215l4 4 7-8"
+                                  stroke="#2563EB" stroke-width="2.5"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M211 175H247M211 195H247M211 215H239"
+                                  stroke="#BFDBFE" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M192 145v-8a4 4 0 0 1 8 0v8M207 145v-8a4 4 0 0 1 8 0v8M222 145v-8a4 4 0 0 1 8 0v8"
+                                  stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>
+                        </g>
+
+                        <path d="M276 199c-3-21 5-35 19-45 3 16-2 29-19 45Z" fill="#34D399"/>
+                        <path d="M277 201c-13-18-26-20-36-16 7 15 19 20 36 16Z" fill="#6EE7B7"/>
+                        <path d="M277 204v18" stroke="#059669" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- Login form -->
+            <section class="form-panel">
+                <header class="form-heading">
+                    <h1>Welcome back!</h1>
+                    <p>Log in to continue your learning journey.</p>
+                </header>
+
+                {% if form.errors %}
+                    <div class="error" role="alert">
+                        Invalid username or password. Please try again.
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="field">
+                        <label for="id_username">Username</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24"
+                                 fill="none" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4"
+                                        stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M4 20c0-4 3.2-6 8-6s8 2 8 6"
+                                      stroke="currentColor" stroke-width="1.8"
+                                      stroke-linecap="round"/>
+                            </svg>
+
+                            <input type="text"
+                                   name="username"
+                                   id="id_username"
+                                   placeholder="Enter your username"
+                                   autocomplete="username"
+                                   autofocus
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="id_password">Password</label>
+
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 24 24"
+                                 fill="none" aria-hidden="true">
+                                <rect x="5" y="10" width="14" height="11" rx="2"
+                                      stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M8 10V7a4 4 0 0 1 8 0v3"
+                                      stroke="currentColor" stroke-width="1.8"
+                                      stroke-linecap="round"/>
+                                <path d="M12 14v3"
+                                      stroke="currentColor" stroke-width="1.8"
+                                      stroke-linecap="round"/>
+                            </svg>
+
+                            <input type="password"
+                                   name="password"
+                                   id="id_password"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password"
+                                   required>
+
+                            <button type="button"
+                                    class="password-toggle"
+                                    id="togglePassword"
+                                    aria-label="Show password"
+                                    aria-pressed="false">
+                                <svg class="eye-icon"
+                                     viewBox="0 0 24 24"
+                                     fill="none"
+                                     aria-hidden="true">
+                                    <path class="eye-outline"
+                                          d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+                                          stroke="currentColor"
+                                          stroke-width="1.8"
+                                          stroke-linejoin="round"/>
+
+                                    <circle class="eye-pupil"
+                                            cx="12" cy="12" r="3"
+                                            stroke="currentColor"
+                                            stroke-width="1.8"/>
+
+                                    <path class="eye-slash"
+                                          d="M4 4L20 20"
+                                          stroke="currentColor"
+                                          stroke-width="2"
+                                          stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <a class="text-link" href="#" id="forgotPasswordLink">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <button class="submit-button" type="submit">
+                        Log In
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12h14m-6-6 6 6-6 6"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="form-divider">or</div>
+
+                <p class="register-link">
+                    New to Study Recommender?
+                    <a href="{% url 'students:register' %}">Create an account</a>
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const passwordInput = document.getElementById("id_password");
+        const togglePassword = document.getElementById("togglePassword");
+
+        togglePassword.addEventListener("click", function () {
+            const isHidden = passwordInput.type === "password";
+
+            // Change the input type to show or hide the password.
+            passwordInput.type = isHidden ? "text" : "password";
+
+            // Update the button's accessible state and animation.
+            togglePassword.setAttribute(
+                "aria-label",
+                isHidden ? "Hide password" : "Show password"
+            );
+
+            togglePassword.setAttribute(
+                "aria-pressed",
+                String(isHidden)
+            );
+        });
+
+        document.getElementById("forgotPasswordLink").addEventListener(
+            "click",
+            function (event) {
+                event.preventDefault();
+
+                alert(
+                    "Password reset is not configured yet. " +
+                    "Please contact your system administrator."
+                );
+            }
+        );
+    </script>
+</body>
+</html>

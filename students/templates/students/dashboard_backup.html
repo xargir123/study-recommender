@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #243047;
+        }
+
+        header {
+            background: linear-gradient(135deg, #183b66, #285b91);
+            color: white;
+            padding: 28px 8%;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        header p {
+            margin: 0;
+            color: #d8e5f5;
+            line-height: 1.6;
+        }
+
+        .logout-button {
+            display: inline-block;
+            background: #dc3545;
+            color: white;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .logout-button:hover {
+            background: #b02a37;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            margin-bottom: 8px;
+        }
+
+        .muted {
+            color: #68778c;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .card,
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px #172b4d10;
+        }
+
+        .card {
+            border-top: 4px solid #3783d6;
+        }
+
+        .card h2 {
+            font-size: 32px;
+            margin: 10px 0;
+            color: #2366ad;
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: #68778c;
+        }
+
+        .panel {
+            margin-bottom: 25px;
+        }
+
+        .panel > h2 {
+            margin-top: 0;
+        }
+
+        .topic {
+            padding: 20px 0;
+            border-bottom: 1px solid #e7edf4;
+        }
+
+        .topic:last-child {
+            border-bottom: none;
+        }
+
+        .topic-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .topic-heading h3 {
+            margin: 0;
+        }
+
+        .status {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 7px 11px;
+            border-radius: 20px;
+            background: #e7effa;
+            color: #24558d;
+        }
+
+        .strong {
+            background: #dff5e7;
+            color: #176b39;
+        }
+
+        .needs-practice {
+            background: #fff0d5;
+            color: #8a5500;
+        }
+
+        .developing {
+            background: #e7effa;
+            color: #24558d;
+        }
+
+        .not-assessed {
+            background: #edf0f5;
+            color: #586579;
+        }
+
+        .progress {
+            height: 10px;
+            background: #e8edf4;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 14px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: #3783d6;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .score-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .recommendation {
+            margin-top: 14px;
+            background: #f0f6ff;
+            border-left: 4px solid #3783d6;
+            padding: 14px;
+            border-radius: 7px;
+            line-height: 1.6;
+        }
+
+        .recommendation p {
+            margin-bottom: 0;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .action-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e0e8f2;
+        }
+
+        .action-card h3 {
+            margin-top: 0;
+            color: #244c7b;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 16px;
+            margin-top: 10px;
+            background: #3159a8;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover {
+            background: #23457f;
+        }
+
+        .button.secondary {
+            background: #526174;
+        }
+
+        .button.secondary:hover {
+            background: #3c4a5b;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #68778c;
+            font-size: 13px;
+        }
+
+        @media (max-width: 500px) {
+            header {
+                padding: 24px 20px;
+            }
+
+            header h1 {
+                font-size: 25px;
+            }
+
+            main {
+                margin-top: 22px;
+                padding: 0 14px;
+            }
+
+            .card,
+            .panel {
+                padding: 17px;
+            }
+
+            .header-content {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>Student Dashboard</h1>
+                <p>AI-Based Student Study Recommendation System</p>
+            </div>
+
+            <form method="post" action="{% url 'students:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">
+                    Log Out
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main>
+        <section class="welcome">
+            <h2>Welcome, {{ student_name }}!</h2>
+            <p class="muted">
+                Monitor your learning progress, review your results,
+                and discover which topics need more practice.
+            </p>
+        </section>
+
+        <section class="cards">
+            <div class="card">
+                <div class="card-label">Learning Topics</div>
+                <h2>{{ total_topics }}</h2>
+                <div class="muted">Topics available</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Completed Quizzes</div>
+                <h2>{{ completed_quizzes }}</h2>
+                <div class="muted">Recorded quiz attempts</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Average Score</div>
+                <h2>
+                    {% if average_score != None %}
+                        {{ average_score }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </h2>
+                <div class="muted">Across completed quizzes</div>
+            </div>
+        </section>
+
+        <section class="actions">
+            <div class="action-card">
+                <h3>Knowledge Quiz</h3>
+                <p class="muted">
+                    Test your understanding of the learning topics.
+                </p>
+                <a class="button" href="{% url 'students:quiz' %}">
+                    Take Quiz
+                </a>
+            </div>
+
+            <div class="action-card">
+                <h3>Learning Progress</h3>
+                <p class="muted">
+                    Review previous attempts and compare your scores.
+                </p>
+                <a class="button" href="{% url 'students:progress' %}">
+                    View Progress
+                </a>
+            </div>
+
+            <div class="action-card">
+                <h3>Personalized Study Plan</h3>
+                <p class="muted">
+                    See your topic recommendations and study activities.
+                </p>
+                <a class="button secondary"
+                   href="{% url 'students:study_plan' %}">
+                    View Study Plan
+                </a>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Your Learning Topics</h2>
+
+            <p class="muted">
+                Review your latest topic scores, performance status,
+                and recommended next steps.
+            </p>
+
+            {% for topic in topics %}
+                <div class="topic">
+                    <div class="topic-heading">
+                        <h3>{{ topic.name }}</h3>
+
+                        <span class="status{% if topic.status == 'Strong' %} strong{% elif topic.status == 'Needs Practice' %} needs-practice{% elif topic.status == 'Developing' %} developing{% else %} not-assessed{% endif %}">
+                            {{ topic.status }}
+                        </span>
+                    </div>
+
+                    {% if topic.score != None %}
+                        <div class="progress">
+                            <div
+                                class="progress-bar"
+                                role="progressbar"
+                                aria-label="{{ topic.name }} score"
+                                aria-valuenow="{{ topic.score }}"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                data-score="{{ topic.score }}"
+                            ></div>
+                        </div>
+
+                        <div class="score-line">
+                            <span class="muted">Latest topic score</span>
+                            <strong>{{ topic.score }}%</strong>
+                        </div>
+                    {% else %}
+                        <p class="muted">
+                            No score available yet. Take a quiz to assess
+                            your understanding of this topic.
+                        </p>
+                    {% endif %}
+
+                    <div class="recommendation">
+                        <strong>Recommended next step</strong>
+                        <p>{{ topic.recommendation }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="muted">
+                    No learning topics are available yet.
+                    Take a quiz to begin tracking your progress.
+                </p>
+            {% endfor %}
+        </section>
+    </main>
+
+    <footer>
+        AI-Based Student Study Recommendation System
+    </footer>
+
+    <script>
+        document.querySelectorAll(".progress-bar").forEach(function (bar) {
+            const score = Number(bar.dataset.score);
+
+            if (Number.isFinite(score)) {
+                const safeScore = Math.max(0, Math.min(100, score));
+                bar.style.width = safeScore + "%";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Study Recommender{% endblock %}</title>
+
+    <style>
+        :root {
+            --navy: #172b4d;
+            --navy-light: #243b63;
+            --blue: #356df3;
+            --blue-light: #edf3ff;
+            --text: #243047;
+            --muted: #718096;
+            --border: #e5eaf2;
+            --background: #f5f7fb;
+            --white: #ffffff;
+            --green: #16845b;
+            --orange: #c77816;
+            --red: #c83b45;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            width: 255px;
+            padding: 24px 16px;
+            overflow-y: auto;
+            background: var(--navy);
+            color: var(--white);
+            transition: width 0.25s ease;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px;
+            margin-bottom: 32px;
+            min-height: 44px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--blue);
+            font-size: 20px;
+        }
+
+        .brand-text {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .nav-label {
+            padding: 0 12px;
+            margin: 0 0 12px;
+            color: #a9b8d0;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            display: grid;
+            gap: 7px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-height: 46px;
+            padding: 12px;
+            border-radius: 9px;
+            color: #d5deed;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--navy-light);
+            color: var(--white);
+        }
+
+        .nav-link.active {
+            box-shadow: inset 3px 0 0 #6e96ff;
+        }
+
+        .nav-icon {
+            display: inline-grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 22px;
+            font-size: 18px;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 24px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 13px 10px;
+            margin-bottom: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .user-avatar {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #dce7ff;
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .user-info {
+            min-width: 0;
+        }
+
+        .user-name {
+            overflow: hidden;
+            font-size: 13px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-role {
+            color: #b5c2d8;
+            font-size: 11px;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-button {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            width: 100%;
+            padding: 12px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: #d5deed;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background: var(--navy-light);
+            color: var(--white);
+        }
+
+        /* MAIN CONTENT */
+
+        .main-area {
+            min-height: 100vh;
+            margin-left: 255px;
+            transition: margin-left 0.25s ease;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 70px;
+            padding: 12px 32px;
+            border-bottom: 1px solid var(--border);
+            background: #ffffff;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-title {
+            margin: 0;
+            color: var(--navy);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .topbar-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .sidebar-toggle {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: var(--white);
+            color: var(--navy);
+            font-size: 21px;
+            cursor: pointer;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--blue-light);
+        }
+
+        .topbar-user {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 1500px;
+            min-height: calc(100vh - 130px);
+            padding: 30px 32px;
+            margin: 0 auto;
+        }
+
+        .page-footer {
+            padding: 20px 32px;
+            border-top: 1px solid var(--border);
+            background: var(--white);
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* SHARED COMPONENTS */
+
+        .panel,
+        .card {
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--white);
+            box-shadow: 0 3px 12px rgba(23, 43, 77, 0.03);
+        }
+
+        .panel h2,
+        .card h2 {
+            margin-top: 0;
+            color: var(--navy);
+            font-size: 18px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--blue);
+            color: var(--white);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .button:hover {
+            background: #2459d8;
+        }
+
+        .button-secondary {
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--navy);
+        }
+
+        .button-secondary:hover {
+            background: var(--background);
+        }
+
+        .topic-card {
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--white);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            overflow: hidden;
+            border-radius: 99px;
+            background: #e9edf5;
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 100%;
+            border-radius: 99px;
+            background: var(--blue);
+            transition: width 0.3s ease;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: var(--white);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .stat-value {
+            margin: 8px 0 4px;
+            color: var(--navy);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .dashboard-columns {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
+            gap: 22px;
+        }
+
+        .quiz-topic {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: var(--blue-light);
+            color: var(--navy);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .question-title {
+            color: var(--navy);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 13px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            border-color: var(--blue);
+            background: #f7faff;
+        }
+
+        .option input {
+            margin-top: 4px;
+            accent-color: var(--blue);
+        }
+
+        .correct {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .incorrect {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .attempt {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .attempt:last-child {
+            border-bottom: 0;
+        }
+
+        /* COLLAPSED SIDEBAR */
+
+        body.sidebar-collapsed .sidebar {
+            width: 78px;
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+
+        body.sidebar-collapsed .main-area {
+            margin-left: 78px;
+        }
+
+        body.sidebar-collapsed .brand {
+            justify-content: center;
+            padding: 0;
+        }
+
+        body.sidebar-collapsed .brand-text,
+        body.sidebar-collapsed .nav-label,
+        body.sidebar-collapsed .nav-link .nav-text,
+        body.sidebar-collapsed .user-info,
+        body.sidebar-collapsed .logout-text {
+            display: none;
+        }
+
+        body.sidebar-collapsed .nav-link,
+        body.sidebar-collapsed .logout-button {
+            justify-content: center;
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+
+        body.sidebar-collapsed .user-card {
+            justify-content: center;
+            padding-right: 0;
+            padding-left: 0;
+        }
+
+        body.sidebar-collapsed .nav-link.active {
+            box-shadow: inset 0 -3px 0 #6e96ff;
+        }
+
+        /* RESPONSIVE LAYOUT */
+
+        @media (max-width: 1000px) {
+            .dashboard-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .page-container {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .sidebar {
+                width: 78px;
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+
+            .brand {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .brand-text,
+            .nav-label,
+            .nav-link .nav-text,
+            .user-info,
+            .logout-text {
+                display: none;
+            }
+
+            .nav-link,
+            .logout-button {
+                justify-content: center;
+                padding-right: 8px;
+                padding-left: 8px;
+            }
+
+            .user-card {
+                justify-content: center;
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .main-area {
+                margin-left: 78px;
+            }
+
+            body.sidebar-collapsed .sidebar {
+                width: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            body.sidebar-collapsed .main-area {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding: 12px 16px;
+            }
+
+            .topbar-user {
+                display: none;
+            }
+
+            .page-container {
+                padding: 20px 14px;
+            }
+
+            .page-footer {
+                padding: 18px 14px;
+            }
+
+            .dashboard-stats {
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 23px;
+            }
+
+            .panel,
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon">📘</div>
+            <div class="brand-text">
+                Study<br>Recommender
+            </div>
+        </div>
+
+        <div class="nav-label">Main Menu</div>
+
+        <nav class="nav-menu" aria-label="Main navigation">
+            <a
+                href="{% url 'students:dashboard' %}"
+                class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
+                {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
+                title="Dashboard"
+            >
+                <span class="nav-icon">⌂</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+
+            <a
+                href="{% url 'students:quiz' %}"
+                class="nav-link{% if request.resolver_match.url_name == 'quiz' %} active{% endif %}"
+                {% if request.resolver_match.url_name == 'quiz' %}aria-current="page"{% endif %}
+                title="Study Quiz"
+            >
+                <span class="nav-icon">✓</span>
+                <span class="nav-text">Study Quiz</span>
+            </a>
+
+            <a
+                href="{% url 'students:study_plan' %}"
+                class="nav-link{% if request.resolver_match.url_name == 'study_plan' %} active{% endif %}"
+                {% if request.resolver_match.url_name == 'study_plan' %}aria-current="page"{% endif %}
+                title="Study Plan"
+            >
+                <span class="nav-icon">▤</span>
+                <span class="nav-text">Study Plan</span>
+            </a>
+
+            <a
+                href="{% url 'students:progress' %}"
+                class="nav-link{% if request.resolver_match.url_name == 'progress' %} active{% endif %}"
+                {% if request.resolver_match.url_name == 'progress' %}aria-current="page"{% endif %}
+                title="My Progress"
+            >
+                <span class="nav-icon">▥</span>
+                <span class="nav-text">My Progress</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="user-card">
+                <div class="user-avatar">
+                    {{ student_name|default:"S"|first|upper }}
+                </div>
+
+                <div class="user-info">
+                    <div class="user-name">
+                        {{ student_name|default:"Student" }}
+                    </div>
+                    <div class="user-role">Student Account</div>
+                </div>
+            </div>
+
+            <form
+                class="logout-form"
+                method="post"
+                action="{% url 'students:logout' %}"
+            >
+                {% csrf_token %}
+                <button class="logout-button" type="submit" title="Logout">
+                    <span class="nav-icon">↪</span>
+                    <span class="logout-text">Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button
+                    class="sidebar-toggle"
+                    id="sidebarToggle"
+                    type="button"
+                    aria-label="Collapse sidebar"
+                    aria-controls="sidebar"
+                    aria-expanded="true"
+                    title="Toggle sidebar"
+                >
+                    ☰
+                </button>
+
+                <div>
+                    <p class="topbar-title">Student Learning Portal</p>
+                    <div class="topbar-subtitle">
+                        Personalized study recommendations
+                    </div>
+                </div>
+            </div>
+
+            <div class="topbar-user">
+                Welcome, {{ request.user.email|default:request.user.username|default:"Student" }}
+            </div>
+        </header>
+
+        <main class="page-container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="page-footer">
+            AI-Based Student Study Recommendation System
+            <span aria-hidden="true"> · </span>
+            Personalized learning for college students
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            if (!sidebarToggle) {
+                return;
+            }
+
+            sidebarToggle.addEventListener("click", function () {
+                const collapsed =
+                    document.body.classList.toggle("sidebar-collapsed");
+
+                sidebarToggle.setAttribute(
+                    "aria-expanded",
+                    String(!collapsed)
+                );
+
+                sidebarToggle.setAttribute(
+                    "aria-label",
+                    collapsed ? "Expand sidebar" : "Collapse sidebar"
+                );
+            });
+        })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

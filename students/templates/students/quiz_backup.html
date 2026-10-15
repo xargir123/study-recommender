@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #243047;
+            margin: 0;
+            padding: 30px 16px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        .topic {
+            color: #4263eb;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .option {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f5f7fb;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background: #e9efff;
+        }
+
+        button, .link-button {
+            display: inline-block;
+            background: #4263eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .correct {
+            color: #167544;
+        }
+
+        .incorrect {
+            color: #b42318;
+        }
+
+        .muted {
+            color: #667085;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <p><a href="/">← Back to Dashboard</a></p>
+
+        <h1>Knowledge Assessment Quiz</h1>
+        <p class="muted">
+            Answer the questions to see your score and topic performance.
+        </p>
+
+        {% if result %}
+            <section class="card">
+                <h2>Quiz Results</h2>
+                <p>
+                    Your score:
+                    <strong>{{ result.score }} / {{ result.total }}</strong>
+                </p>
+                <p>
+                    Overall percentage:
+                    <strong>{{ result.percentage }}%</strong>
+                </p>
+            </section>
+
+            <section class="card">
+                <h2>Performance by Topic</h2>
+
+                {% for topic in result.topic_scores %}
+                    <p>
+                        <strong>{{ topic.name }}</strong>:
+                        {{ topic.correct }} / {{ topic.total }}
+                        ({{ topic.percentage }}%)
+                    </p>
+                {% endfor %}
+            </section>
+
+            <section class="card">
+                <h2>Answer Review</h2>
+
+                {% for answer in result.answers %}
+                    <div>
+                        <p>
+                            <strong>
+                                {{ forloop.counter }}. {{ answer.text }}
+                            </strong>
+                        </p>
+
+                        {% if answer.is_correct %}
+                            <p class="correct">Correct!</p>
+                        {% else %}
+                            <p class="incorrect">Not quite.</p>
+                        {% endif %}
+
+                        <p>Your answer: {{ answer.selected_label }}</p>
+                        <p>Correct answer: {{ answer.correct_label }}</p>
+                        <p class="muted">
+                            Explanation: {{ answer.explanation }}
+                        </p>
+                    </div>
+                    <hr>
+                {% endfor %}
+            </section>
+
+            <a class="link-button" href="/quiz/">Try Again</a>
+
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+
+                {% for question in questions %}
+                    <section class="card">
+                        <p class="topic">{{ question.topic }}</p>
+
+                        <h2>
+                            {{ forloop.counter }}. {{ question.text }}
+                        </h2>
+
+                        {% for option in question.options %}
+                            <label class="option">
+                                <input
+                                    type="radio"
+                                    name="{{ question.id }}"
+                                    value="{{ option.0 }}"
+                                    required
+                                >
+                                {{ option.1 }}
+                            </label>
+                        {% endfor %}
+                    </section>
+                {% endfor %}
+
+                <button type="submit">Submit Quiz</button>
+            </form>
+        {% endif %}
+    </main>
+</body>
+</html>

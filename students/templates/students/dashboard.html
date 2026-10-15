@@ -1,0 +1,611 @@
+
+{% extends "students/base.html" %}
+
+{% block title %}Student Dashboard | Study Recommender{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-banner {
+        padding: 30px;
+        margin-bottom: 24px;
+        border-radius: 16px;
+        background: linear-gradient(120deg, #172b4d, #356df3);
+        color: white;
+    }
+
+    .welcome-banner h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        line-height: 1.3;
+    }
+
+    .welcome-banner p {
+        max-width: 650px;
+        margin: 0;
+        color: #e1eaff;
+        line-height: 1.7;
+    }
+
+    .welcome-label {
+        display: inline-block;
+        margin-bottom: 12px;
+        color: #d6e2ff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--white);
+        box-shadow: 0 3px 12px rgba(23, 43, 77, 0.03);
+    }
+
+    .summary-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .summary-icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--blue-light);
+        font-size: 20px;
+    }
+
+    .summary-label {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .summary-value {
+        margin: 14px 0 4px;
+        color: var(--navy);
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .summary-note {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .insight-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .insight-card {
+        padding: 20px 22px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--white);
+    }
+
+    .insight-label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .insight-name { margin: 8px 0 5px; color: var(--navy); font-size: 20px; font-weight: 800; }
+    .insight-score { color: var(--muted); font-size: 13px; }
+    .trend-card { padding: 22px; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 14px; background: var(--white); }
+    .trend-card h2 { margin: 0 0 5px; color: var(--navy); font-size: 18px; }
+    .trend-card p { margin: 0 0 15px; color: var(--muted); font-size: 13px; }
+    .trend-canvas-wrap { position: relative; width: 100%; height: 230px; }
+    #scoreTrendChart { display: block; width: 100%; height: 100%; }
+    .trend-empty { padding: 25px 10px; color: var(--muted); text-align: center; }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+        align-items: start;
+        gap: 22px;
+    }
+
+    .dashboard-panel {
+        min-width: 0;
+        padding: 24px;
+        margin-bottom: 22px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--white);
+        box-shadow: 0 3px 12px rgba(23, 43, 77, 0.03);
+    }
+
+    .panel-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .panel-heading h2 {
+        margin: 0 0 5px;
+        color: var(--navy);
+        font-size: 18px;
+    }
+
+    .panel-heading p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .topic-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .topic-item {
+        padding: 17px;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+    }
+
+    .topic-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .topic-name {
+        margin: 0 0 5px;
+        color: var(--navy);
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .topic-status {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 20px;
+        background: #edf3ff;
+        color: #315fbd;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .topic-status.needs-practice {
+        background: #fff0ee;
+        color: #b42318;
+    }
+
+    .topic-status.developing {
+        background: #fff5df;
+        color: #925d08;
+    }
+
+    .topic-status.strong {
+        background: #e8f7ef;
+        color: #18794e;
+    }
+
+    .topic-score {
+        flex-shrink: 0;
+        color: var(--navy);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .topic-recommendation {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .topic-empty {
+        padding: 24px 16px;
+        border: 1px dashed var(--border);
+        border-radius: 11px;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    .quick-actions {
+        display: grid;
+        gap: 11px;
+    }
+
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .quick-action:hover {
+        border-color: var(--blue);
+        background: #f7faff;
+    }
+
+    .quick-action-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--blue-light);
+        font-size: 19px;
+    }
+
+    .quick-action-text strong {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--navy);
+        font-size: 13px;
+    }
+
+    .quick-action-text span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .ai-card {
+        padding: 22px;
+        margin-bottom: 22px;
+        border-radius: 14px;
+        background: #edf3ff;
+    }
+
+    .ai-card h2 {
+        margin: 0 0 9px;
+        color: var(--navy);
+        font-size: 17px;
+    }
+
+    .ai-card p {
+        margin: 0 0 17px;
+        color: #52627b;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .quote-card {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--white);
+    }
+
+    .quote-mark {
+        color: var(--blue);
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .quote-card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        font-style: italic;
+        line-height: 1.8;
+    }
+
+    @media (max-width: 1050px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 750px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .insight-grid { grid-template-columns: 1fr; }
+
+        .welcome-banner {
+            padding: 24px;
+        }
+
+        .welcome-banner h1 {
+            font-size: 24px;
+        }
+
+        .dashboard-panel {
+            padding: 18px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .topic-top {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<header class="welcome-banner">
+    <span class="welcome-label">Student Dashboard</span>
+
+    <h1>Welcome back, {{ student_name|default:"Student" }}!</h1>
+
+    <p>
+        Keep building your knowledge, review your topic performance,
+        and follow your personalized study recommendations to improve
+        your learning progress.
+    </p>
+</header>
+
+<section class="summary-grid">
+    <article class="summary-card">
+        <div class="summary-card-top">
+            <span class="summary-label">Average Score</span>
+            <span class="summary-icon">📊</span>
+        </div>
+
+        <div class="summary-value">
+            {% if average_score != None %}{{ average_score|floatformat:0 }}%{% else %}—{% endif %}
+        </div>
+
+        <div class="summary-note">Your overall quiz performance</div>
+    </article>
+
+    <article class="summary-card">
+        <div class="summary-card-top">
+            <span class="summary-label">Learning Topics</span>
+            <span class="summary-icon">📚</span>
+        </div>
+
+        <div class="summary-value">
+            {{ total_topics|default:0 }}
+        </div>
+
+        <div class="summary-note">Topics included in your learning plan</div>
+    </article>
+
+    <article class="summary-card">
+        <div class="summary-card-top">
+            <span class="summary-label">Completed Quizzes</span>
+            <span class="summary-icon">✓</span>
+        </div>
+
+        <div class="summary-value">
+            {{ completed_quizzes|default:0 }}
+        </div>
+
+        <div class="summary-note">Your completed learning assessments</div>
+    </article>
+</section>
+
+<section class="insight-grid" aria-label="Topic highlights">
+    <article class="insight-card">
+        <div class="insight-label">🎯 Priority Topic</div>
+        {% if weakest_topic %}
+            <div class="insight-name">{{ weakest_topic.name }}</div>
+            <div class="insight-score">{{ weakest_topic.score }}% · Focus your next study session here.</div>
+            <p class="topic-recommendation">{{ weakest_topic.recommendation }}</p>
+        {% else %}
+            <div class="insight-name">Not available yet</div>
+            <div class="insight-score">Take a quiz to identify the topic that needs the most practice.</div>
+        {% endif %}
+    </article>
+    <article class="insight-card">
+        <div class="insight-label">🏆 Strongest Topic</div>
+        {% if strongest_topic %}
+            <div class="insight-name">{{ strongest_topic.name }}</div>
+            <div class="insight-score">{{ strongest_topic.score }}% · Keep building on this strength.</div>
+            <p class="topic-recommendation">{{ strongest_topic.recommendation }}</p>
+        {% else %}
+            <div class="insight-name">Not available yet</div>
+            <div class="insight-score">Your strongest topic will appear after your first quiz.</div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="trend-card">
+    <h2>Learning Progress</h2>
+    <p>Your latest quiz scores over time. Use this trend to track improvement.</p>
+    {% if chart_data %}
+        <div class="trend-canvas-wrap"><canvas id="scoreTrendChart" role="img" aria-label="Line chart of quiz scores over time"></canvas></div>
+        {{ chart_data|json_script:"score-trend-data" }}
+    {% else %}
+        <div class="trend-empty">Your progress chart will appear after you complete your first quiz.</div>
+    {% endif %}
+</section>
+
+<div class="content-grid">
+    <section class="dashboard-panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Your Topic Performance</h2>
+                <p>Review your scores and recommendations by topic.</p>
+            </div>
+        </div>
+
+        <div class="topic-list">
+            {% for topic in topics %}
+                <article class="topic-item">
+                    <div class="topic-top">
+                        <div>
+                            <h3 class="topic-name">{{ topic.name }}</h3>
+
+                            <span class="topic-status
+                                {% if topic.status == 'Needs Practice' %}
+                                    needs-practice
+                                {% elif topic.status == 'Developing' %}
+                                    developing
+                                {% elif topic.status == 'Strong' %}
+                                    strong
+                                {% endif %}
+                            ">
+                                {{ topic.status|default:"Not Assessed" }}
+                            </span>
+                        </div>
+
+                        <div class="topic-score">
+                            {% if topic.score != None %}{{ topic.score|floatformat:0 }}%{% else %}—{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="progress-track">
+                        <div
+                            class="progress-bar"
+                            data-score="{% if topic.score != None %}{{ topic.score }}{% else %}0{% endif %}"
+                        ></div>
+                    </div>
+
+                    {% if topic.recommendation %}
+                        <p class="topic-recommendation">
+                            {{ topic.recommendation }}
+                        </p>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <div class="topic-empty">
+                    <p>You don't have any topic results yet.</p>
+                    <p>Take a quiz to begin tracking your performance.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <aside>
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Quick Actions</h2>
+                    <p>Continue with your learning activities.</p>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <a href="{% url 'students:quiz' %}" class="quick-action">
+                    <span class="quick-action-icon">✎</span>
+                    <span class="quick-action-text">
+                        <strong>Take a Quiz</strong>
+                        <span>Test your understanding of the topics.</span>
+                    </span>
+                </a>
+
+                <a href="{% url 'students:study_plan' %}" class="quick-action">
+                    <span class="quick-action-icon">📖</span>
+                    <span class="quick-action-text">
+                        <strong>View Study Plan</strong>
+                        <span>Review your recommended study tasks.</span>
+                    </span>
+                </a>
+
+                <a href="{% url 'students:progress' %}" class="quick-action">
+                    <span class="quick-action-icon">📈</span>
+                    <span class="quick-action-text">
+                        <strong>Track Progress</strong>
+                        <span>See your quiz history and improvement.</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="ai-card">
+            <h2>🤖 Personalized Learning</h2>
+            <p>
+                Your quiz performance helps the system identify topics
+                that may need more practice and guide your next study session.
+            </p>
+
+            <a href="{% url 'students:study_plan' %}" class="button">
+                View Recommendations
+            </a>
+        </section>
+
+        <section class="quote-card">
+            <div class="quote-mark">“</div>
+            <p>
+                Consistent practice and reviewing your mistakes can help
+                you build stronger understanding over time.
+            </p>
+        </section>
+    </aside>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll(".progress-bar").forEach(function (bar) {
+        const score = Number(bar.dataset.score);
+
+        if (Number.isFinite(score)) {
+            const safeScore = Math.max(0, Math.min(100, score));
+            bar.style.width = safeScore + "%";
+        }
+    });
+
+    // Draw a lightweight responsive line chart without external libraries.
+    (function () {
+        const canvas = document.getElementById("scoreTrendChart");
+        const dataNode = document.getElementById("score-trend-data");
+        if (!canvas || !dataNode) return;
+        let data;
+        try { data = JSON.parse(dataNode.textContent); } catch (error) { return; }
+        if (!Array.isArray(data) || !data.length) return;
+
+        function drawChart() {
+            const ratio = window.devicePixelRatio || 1;
+            const width = Math.max(300, canvas.clientWidth);
+            const height = Math.max(180, canvas.clientHeight);
+            canvas.width = width * ratio;
+            canvas.height = height * ratio;
+            const ctx = canvas.getContext("2d");
+            ctx.scale(ratio, ratio);
+            ctx.clearRect(0, 0, width, height);
+            const pad = { left: 38, right: 16, top: 18, bottom: 38 };
+            const plotW = width - pad.left - pad.right;
+            const plotH = height - pad.top - pad.bottom;
+            ctx.font = "12px Arial";
+            ctx.textBaseline = "middle";
+            [0, 25, 50, 75, 100].forEach(function (value) {
+                const y = pad.top + plotH * (1 - value / 100);
+                ctx.strokeStyle = "#e7ecf4"; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+                ctx.fillStyle = "#718096"; ctx.textAlign = "right"; ctx.fillText(value + "%", pad.left - 8, y);
+            });
+            const points = data.map(function (item, index) {
+                return { x: pad.left + (data.length === 1 ? plotW / 2 : index * plotW / (data.length - 1)), y: pad.top + plotH * (1 - Math.max(0, Math.min(100, Number(item.score) || 0)) / 100), score: Number(item.score) || 0, label: item.label || "Quiz" };
+            });
+            if (points.length > 1) {
+                ctx.strokeStyle = "#356df3"; ctx.lineWidth = 3; ctx.lineJoin = "round";
+                ctx.beginPath(); points.forEach(function (point, index) { if (index === 0) ctx.moveTo(point.x, point.y); else ctx.lineTo(point.x, point.y); }); ctx.stroke();
+            }
+            points.forEach(function (point, index) {
+                ctx.fillStyle = "#356df3"; ctx.beginPath(); ctx.arc(point.x, point.y, 4, 0, Math.PI * 2); ctx.fill();
+                if (data.length <= 6 || index === 0 || index === points.length - 1 || index % 2 === 0) {
+                    ctx.fillStyle = "#718096"; ctx.textAlign = "center";
+                    let label = point.label; if (label.length > 9) label = label.slice(0, 9);
+                    ctx.fillText(label, point.x, height - 17);
+                }
+            });
+        }
+        drawChart();
+        window.addEventListener("resize", drawChart);
+    })();
+</script>
+{% endblock %}

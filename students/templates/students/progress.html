@@ -1,0 +1,310 @@
+
+{% extends "students/base.html" %}
+
+{% block title %}My Learning Progress | Study Recommender{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-header {
+        margin-bottom: 24px;
+    }
+
+    .progress-header h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 750;
+    }
+
+    .progress-subtitle {
+        color: var(--muted, #64748b);
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .progress-card {
+        background: var(--card, #ffffff);
+        padding: 24px;
+        margin: 20px 0;
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 18px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .progress-card h2 {
+        margin: 0 0 18px;
+        font-size: 20px;
+    }
+
+    .latest-score {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--primary, #3159a8);
+        margin: 8px 0;
+    }
+
+    .score-message {
+        line-height: 1.7;
+        color: var(--muted, #64748b);
+    }
+
+    .score-chart {
+        display: flex;
+        align-items: stretch;
+        gap: 14px;
+        height: 260px;
+        padding: 20px 8px 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+
+    .score-bar-item {
+        min-width: 55px;
+        flex: 1 0 55px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .score-bar-value {
+        font-size: 12px;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+
+    .score-bar-track {
+        width: 100%;
+        max-width: 48px;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .score-bar {
+        width: 100%;
+        min-height: 3px;
+        height: 0;
+        background: var(--primary, #527bd1);
+        border-radius: 6px 6px 0 0;
+        transition: height 0.4s ease;
+    }
+
+    .score-bar-label {
+        font-size: 12px;
+        margin-top: 8px;
+        padding-bottom: 8px;
+        color: var(--muted, #64748b);
+        white-space: nowrap;
+    }
+
+    .score-chart-note {
+        margin-top: 14px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--muted, #64748b);
+    }
+
+    .attempt-item {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+
+    .attempt-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .attempt-score {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .attempt-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        margin-top: 8px;
+        color: var(--muted, #64748b);
+        font-size: 14px;
+    }
+
+    .progress-empty {
+        padding: 16px 0;
+        line-height: 1.7;
+        color: var(--muted, #64748b);
+    }
+
+    .progress-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .progress-actions .button {
+        margin: 0;
+    }
+
+    .progress-button-secondary {
+        background: var(--surface, #eef2f7);
+        color: var(--text, #334155);
+    }
+
+    @media (max-width: 600px) {
+        .progress-header h1 {
+            font-size: 24px;
+        }
+
+        .progress-card {
+            padding: 18px;
+        }
+
+        .score-chart {
+            gap: 8px;
+        }
+
+        .score-bar-item {
+            min-width: 44px;
+            flex-basis: 44px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="progress-header">
+    <h1>My Learning Progress</h1>
+    <p class="progress-subtitle">
+        Track your quiz scores and monitor your learning progress over time.
+    </p>
+</header>
+
+<section class="progress-card">
+    <h2>Latest Quiz Score</h2>
+
+    {% if latest_score != None %}
+        <div class="latest-score">{{ latest_score }}%</div>
+
+        {% if score_change != None %}
+            {% if score_change > 0 %}
+                <p class="score-message">
+                    Your score increased by
+                    {{ score_change }} percentage points.
+                </p>
+            {% elif score_change < 0 %}
+                <p class="score-message">
+                    Your score decreased by
+                    {{ score_change|stringformat:"d"|cut:"-" }}
+                    percentage points.
+                </p>
+            {% else %}
+                <p class="score-message">
+                    Your score stayed the same as your previous attempt.
+                </p>
+            {% endif %}
+        {% else %}
+            <p class="score-message">
+                Complete another quiz to compare your scores.
+            </p>
+        {% endif %}
+    {% else %}
+        <p class="progress-empty">
+            You have no quiz attempts yet. Take a quiz to start tracking
+            your progress.
+        </p>
+    {% endif %}
+</section>
+
+<section class="progress-card">
+    <h2>Score History</h2>
+
+    {% if chart_attempts %}
+        <p class="progress-subtitle">Scores from oldest to newest:</p>
+
+        <div class="score-chart">
+            {% for attempt in chart_attempts %}
+                <div class="score-bar-item">
+                    <span class="score-bar-value">
+                        {{ attempt.percentage }}%
+                    </span>
+
+                    <div class="score-bar-track">
+                        <div
+                            class="score-bar"
+                            data-score="{{ attempt.percentage }}"
+                            title="{{ attempt.percentage }}%"
+                        ></div>
+                    </div>
+
+                    <span class="score-bar-label">
+                        Attempt {{ forloop.counter }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <p class="score-chart-note">
+            Each bar represents a quiz attempt, ordered from oldest to newest.
+        </p>
+    {% else %}
+        <p class="progress-empty">
+            Your score chart will appear after your first quiz.
+        </p>
+    {% endif %}
+</section>
+
+<section class="progress-card">
+    <h2>Recent Quiz Attempts</h2>
+
+    {% for attempt in attempts %}
+        <div class="attempt-item">
+            <div class="attempt-score">
+                Score: {{ attempt.score }} / {{ attempt.total_questions }}
+            </div>
+
+            <div class="attempt-details">
+                <span>Percentage: {{ attempt.percentage }}%</span>
+                <span>
+                    Date: {{ attempt.created_at|date:"M d, Y - h:i A" }}
+                </span>
+            </div>
+        </div>
+    {% empty %}
+        <p class="progress-empty">
+            No quiz attempts have been saved yet.
+        </p>
+    {% endfor %}
+</section>
+
+<div class="progress-actions">
+    <a class="button" href="{% url 'students:dashboard' %}">
+        Back to Dashboard
+    </a>
+
+    <a class="button progress-button-secondary"
+       href="{% url 'students:quiz' %}">
+        Take Quiz
+    </a>
+
+    <a class="button progress-button-secondary"
+       href="{% url 'students:study_plan' %}">
+        My Study Plan
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll(".score-bar").forEach(function (bar) {
+        const score = Number(bar.dataset.score);
+
+        if (Number.isFinite(score)) {
+            const safeScore = Math.max(0, Math.min(100, score));
+            bar.style.height = Math.max(3, safeScore) + "%";
+        }
+    });
+</script>
+{% endblock %}
